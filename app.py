@@ -18,6 +18,11 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max upload size
 
+# Add context processor for templates
+@app.context_processor
+def inject_now():
+    return {'now': datetime.now()}
+
 # Initialize database
 init_db()
 
