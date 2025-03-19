@@ -25,6 +25,41 @@ app.secret_key = os.urandom(24)
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max upload size
 logger.info("Flask application initialized")
 
+# Health check endpoint for Docker
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Enhanced health check endpoint for Docker with additional system information."""
+    import shutil
+    import platform
+    import sys
+    import flask
+    
+    # Check database connection
+    db_status = "healthy"
+    try:
+        # Simple test query
+        get_all_custom_instructions()
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
+    # Check disk space
+    upload_space = shutil.disk_usage(os.path.join(os.getcwd(), 'uploads'))
+    temp_space = shutil.disk_usage(os.path.join(os.getcwd(), 'temp_audio'))
+    
+    return jsonify({
+        "status": "healthy",
+        "time": datetime.now().isoformat(),
+        "python_version": sys.version,
+        "flask_version": flask.__version__,
+        "platform": platform.platform(),
+        "database": db_status,
+        "disk_space": {
+            "uploads_gb": round(upload_space.free / (1024**3), 2),
+            "temp_audio_gb": round(temp_space.free / (1024**3), 2)
+        },
+        "environment": "production" if not app.debug else "development"
+    })
+
 # Add context processor for templates
 @app.context_processor
 def inject_now():

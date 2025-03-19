@@ -1,0 +1,64 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ./data/transcriptions.db:/app/transcriptions.db
+      - uploads:/app/uploads
+      - temp_audio:/app/temp_audio
+      - logs:/app/logs
+    env_file:
+      - .env.prod
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Using Flask 2.3+ compatible env vars
+      - FLASK_DEBUG=0
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health | grep -q '\"status\":\"healthy\"'"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  caddy:
+    image: caddy:2.7.6-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - app_network
+    depends_on:
+      - app
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  uploads:
+    driver: local
+  temp_audio:
+    driver: local
+  logs:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
