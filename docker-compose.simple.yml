@@ -8,9 +8,9 @@ services:
       - "8000:8000"
     volumes:
       - ./db:/app/db
-      - uploads:/app/uploads
-      - temp_audio:/app/temp_audio
-      - logs:/app/logs
+      - ./uploads:/app/uploads
+      - ./temp_audio:/app/temp_audio
+      - ./logs:/app/logs
     env_file:
       - .env.prod
     environment:
@@ -31,11 +31,3 @@ services:
         reservations:
           cpus: '0.5'
           memory: 512M
-
-volumes:
-  uploads:
-    driver: local
-  temp_audio:
-    driver: local
-  logs:
-    driver: local

@@ -14,11 +14,18 @@ A Flask-based web application for transcribing and processing legal audio record
 
 ## Prerequisites
 
+### For Local Development
 - Python 3.9+
 - FFmpeg (for audio file processing)
 - OpenAI API key
 
+### For Docker Deployment
+- Docker and Docker Compose
+- OpenAI API key
+
 ## Installation
+
+### Local Installation
 
 1. Clone the repository:
    ```
@@ -42,7 +49,27 @@ A Flask-based web application for transcribing and processing legal audio record
    OPENAI_API_KEY=your_api_key_here
    ```
 
+### Docker Installation
+
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   cd transcribe
+   ```
+
+2. Edit the `.env.prod` file to add your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_api_key_here
+   ```
+
+3. Create the data directory:
+   ```
+   mkdir -p data
+   ```
+
 ## Usage
+
+### Local Usage
 
 1. Start the Flask application:
    ```
@@ -54,7 +81,41 @@ A Flask-based web application for transcribing and processing legal audio record
    http://127.0.0.1:5000/
    ```
 
-3. Upload an audio file, select post-processing instructions, and submit for transcription.
+### Docker Usage
+
+#### Simple Setup (Without Reverse Proxy)
+
+1. Start the application:
+   ```
+   docker-compose -f docker-compose.simple.yml up -d
+   ```
+
+2. Open your web browser and navigate to:
+   ```
+   http://localhost:8000/
+   ```
+
+#### Full Setup (With Caddy Reverse Proxy)
+
+1. Edit the Caddyfile to set your domain name and email for HTTPS certificates:
+   ```
+   # Change transcribe.example.com to your actual domain
+   ```
+
+2. Start the application:
+   ```
+   docker-compose up -d
+   ```
+
+3. Access the application using your configured domain name.
+
+#### Stopping the Application
+
+```
+docker-compose down  # or docker-compose -f docker-compose.simple.yml down
+```
+
+Once the application is running, you can upload an audio file, select post-processing instructions, and submit for transcription.
 
 ## Project Structure
 
@@ -63,8 +124,14 @@ transcribe/
 ├── app.py                  # Main Flask application
 ├── database.py             # SQLite database operations
 ├── requirements.txt        # Python dependencies
-├── .env                    # Environment variables (API keys)
+├── .env                    # Environment variables for local development
+├── .env.prod               # Environment variables for Docker deployment
 ├── .gitignore              # Git ignore file
+├── Dockerfile              # Docker container definition
+├── docker-compose.yml      # Docker Compose with Caddy setup
+├── docker-compose.simple.yml # Docker Compose without Caddy
+├── docker-entrypoint.sh    # Container startup script
+├── Caddyfile               # Caddy reverse proxy configuration
 ├── static/                 # Static assets
 │   ├── css/                # CSS files
 │   └── js/                 # JavaScript files

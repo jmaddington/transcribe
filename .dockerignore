@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+
+# Version control
+.git
+.gitignore
+
+# Database and data files
+transcriptions.db
+data/
+uploads/
+temp_audio/
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Docker files (to avoid recursion)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# IDE folders
+.idea/
+.vscode/
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store

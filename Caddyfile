@@ -1,0 +1,58 @@
+{
+    # Email for Let's Encrypt notifications
+    email you@example.com
+    # Global settings
+    servers {
+        metrics
+        # HTTP/3 is now enabled by default in Caddy 2.7.6
+    }
+}
+
+# Change this to your actual domain or
+# use localhost for local development
+transcribe.example.com {
+    # Enable compression
+    encode gzip
+
+    # Forward requests to the Flask application
+    reverse_proxy app:8000 {
+        # Increase timeouts for large file uploads
+        transport http {
+            response_header_timeout 5m
+            dial_timeout 10s
+        }
+    }
+
+    # Add security headers (updated for modern browsers)
+    header {
+        # Enable HTTP Strict Transport Security (HSTS)
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Disable content-type sniffing
+        X-Content-Type-Options "nosniff"
+        # Modern CSP (optional - may need adjustments for your app)
+        # Content-Security-Policy "default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # Enable referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Permissions policy
+        Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+        # Modern replacement for X-XSS-Protection (deprecated)
+        X-XSS-Protection "0"
+        # Allow cross-origin requests from your domains
+        Access-Control-Allow-Origin "https://transcribe.example.com"
+        Access-Control-Allow-Methods "GET, POST, OPTIONS"
+        Access-Control-Allow-Headers "DNT, User-Agent, X-Requested-With, If-Modified-Since, Cache-Control, Content-Type, Range"
+    }
+
+    # Customize error pages (optional)
+    handle_errors {
+        respond "Server Error: {http.error.status_code}" 500
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}

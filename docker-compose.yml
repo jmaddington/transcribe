@@ -6,9 +6,9 @@ services:
     restart: unless-stopped
     volumes:
       - ./db:/app/db
-      - uploads:/app/uploads
-      - temp_audio:/app/temp_audio
-      - logs:/app/logs
+      - ./uploads:/app/uploads
+      - ./temp_audio:/app/temp_audio
+      - ./logs:/app/logs
     env_file:
       - .env.prod
     environment:
@@ -52,12 +52,6 @@ networks:
     driver: bridge
 
 volumes:
-  uploads:
-    driver: local
-  temp_audio:
-    driver: local
-  logs:
-    driver: local
   caddy_data:
     driver: local
   caddy_config:
