@@ -5,7 +5,7 @@ services:
     build: .
     restart: unless-stopped
     volumes:
-      - ./data:/app/data
+      - ./db:/app/db
       - uploads:/app/uploads
       - temp_audio:/app/temp_audio
       - logs:/app/logs

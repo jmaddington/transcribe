@@ -66,14 +66,14 @@ echo "Cleaning up stale temporary files..."
 find /app/temp_audio -type f -name "*.temp.*" -mtime +1 -delete 2>/dev/null || true
 echo "✓ Cleanup complete"
 
-# Prepare data directory
-echo "Preparing data directory..."
-mkdir -p /app/data
-if ! touch "/app/data/.write_test" 2>/dev/null; then
-    handle_error "Permission denied: Cannot write to data directory"
+# Prepare database directory
+echo "Preparing database directory..."
+mkdir -p /app/db
+if ! touch "/app/db/.write_test" 2>/dev/null; then
+    handle_error "Permission denied: Cannot write to database directory"
 else
-    rm "/app/data/.write_test"
-    echo "✓ Data directory is writable"
+    rm "/app/db/.write_test"
+    echo "✓ Database directory is writable"
 fi
 
 # Initialize database
