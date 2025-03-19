@@ -66,10 +66,26 @@ echo "Cleaning up stale temporary files..."
 find /app/temp_audio -type f -name "*.temp.*" -mtime +1 -delete 2>/dev/null || true
 echo "✓ Cleanup complete"
 
+# Prepare data directory
+echo "Preparing data directory..."
+mkdir -p /app/data
+if ! touch "/app/data/.write_test" 2>/dev/null; then
+    handle_error "Permission denied: Cannot write to data directory"
+else
+    rm "/app/data/.write_test"
+    echo "✓ Data directory is writable"
+fi
+
 # Initialize database
 echo "Initializing database..."
 if python -c "from database import init_db; init_db()"; then
     echo "✓ Database initialization complete"
+    # Verify database is writable
+    if python -c "from database import get_all_custom_instructions; get_all_custom_instructions()"; then
+        echo "✓ Database is readable and writable"
+    else
+        handle_error "Database verification failed - cannot read from database"
+    fi
 else
     handle_error "Database initialization failed!"
 fi

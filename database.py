@@ -9,7 +9,10 @@ from utils.logging_config import get_db_logger
 # Initialize logger
 logger = get_db_logger()
 
-DATABASE_FILE = "transcriptions.db"
+# Use data directory for database to work with Docker volume mounts
+DATA_DIR = os.path.join(os.getcwd(), "data")
+os.makedirs(DATA_DIR, exist_ok=True)
+DATABASE_FILE = os.path.join(DATA_DIR, "transcriptions.db")
 
 def init_db():
     """Initialize the database and create tables if they don't exist."""

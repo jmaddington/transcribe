@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./data/transcriptions.db:/app/transcriptions.db
+      - ./data:/app/data
       - uploads:/app/uploads
       - temp_audio:/app/temp_audio
       - logs:/app/logs
