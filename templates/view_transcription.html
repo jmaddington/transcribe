@@ -32,8 +32,13 @@
                             </a>
                         </li>
                         <li>
+                            <a class="dropdown-item" href="{{ url_for('export_transcription', transcription_id=transcription.id, format='docx') }}" target="_blank">
+                                <i class="fas fa-file-word me-1 text-primary"></i> Microsoft Word
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item" href="{{ url_for('export_transcription', transcription_id=transcription.id, format='text') }}" target="_blank">
-                                <i class="fas fa-file-alt me-1 text-primary"></i> Plain Text
+                                <i class="fas fa-file-alt me-1 text-secondary"></i> Plain Text
                             </a>
                         </li>
                     </ul>

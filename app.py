@@ -14,7 +14,7 @@ from database import save_transcription, delete_transcription
 
 from utils.audio_handler import save_uploaded_file, get_audio_duration, split_audio_file, cleanup_temp_files, get_file_type
 from utils.openai_client import transcribe_audio, post_process_transcription, check_file_size
-from utils.export_utils import generate_pdf, export_plaintext
+from utils.export_utils import generate_pdf, export_plaintext, export_to_word
 
 # Initialize logger
 logger = get_app_logger()
@@ -189,9 +189,12 @@ def delete_transcription_route(transcription_id):
 
 @app.route('/export/<int:transcription_id>/<format>')
 def export_transcription(transcription_id, format):
-    """Export a transcription to PDF or plaintext."""
+    """Export a transcription to various formats."""
+    logger.info(f"Export requested for transcription ID {transcription_id} in format: {format}")
+    
     transcription = get_transcription(transcription_id)
     if not transcription:
+        logger.warning(f"Transcription not found: {transcription_id}")
         flash('Transcription not found')
         return redirect(url_for('index'))
     
@@ -200,20 +203,34 @@ def export_transcription(transcription_id, format):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         if format == 'pdf':
+            logger.info(f"Generating PDF export for transcription ID {transcription_id}")
             output_path = f"{filename}_{timestamp}.pdf"
             filepath = generate_pdf(transcription, output_path)
+            logger.info(f"PDF export generated: {filepath}")
             return send_file(filepath, as_attachment=True, download_name=os.path.basename(filepath))
         
         elif format == 'text':
+            logger.info(f"Generating plaintext export for transcription ID {transcription_id}")
             output_path = f"{filename}_{timestamp}.txt"
             filepath = export_plaintext(transcription, output_path)
+            logger.info(f"Plaintext export generated: {filepath}")
+            return send_file(filepath, as_attachment=True, download_name=os.path.basename(filepath))
+        
+        elif format == 'docx':
+            logger.info(f"Generating Word document export for transcription ID {transcription_id}")
+            output_path = f"{filename}_{timestamp}.docx"
+            filepath = export_to_word(transcription, output_path)
+            logger.info(f"Word document export generated: {filepath}")
             return send_file(filepath, as_attachment=True, download_name=os.path.basename(filepath))
         
         else:
+            logger.warning(f"Invalid export format requested: {format}")
             flash('Invalid export format')
             return redirect(url_for('view_transcription', transcription_id=transcription_id))
             
     except Exception as e:
+        logger.error(f"Error exporting transcription: {str(e)}")
+        logger.error(traceback.format_exc())
         flash(f'Error exporting transcription: {str(e)}', 'error')
         return redirect(url_for('view_transcription', transcription_id=transcription_id))
 
