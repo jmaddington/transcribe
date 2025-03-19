@@ -2,6 +2,10 @@
 
 A Flask-based web application for transcribing and processing legal audio recordings using OpenAI's Whisper and GPT-4o models.
 
+## About This Project
+
+This project was entirely built with Cline and Anthropic's Sonnet model. It serves as a demonstration of AI coding capabilities and should not be considered ready for production without a human review, which is not planned.
+
 ## Features
 
 - **Audio Transcription**: Upload and transcribe MP3, WAV, MP4, M4A, OGG, and FLAC audio files
