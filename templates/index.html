@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Legal Audio Transcription Tool{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Upload Section -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload me-2"></i>Upload Audio File
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select MP3 or WAV File</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".mp3,.wav,.mp4,.m4a,.ogg,.flac" required>
+                        <div class="form-text text-muted">
+                            Supported formats: MP3, WAV, MP4, M4A, OGG, FLAC
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="custom_instruction_id" class="form-label">Post-Processing Instructions</label>
+                        <select class="form-select" id="custom_instruction_id" name="custom_instruction_id">
+                            {% for instruction in custom_instructions %}
+                                <option value="{{ instruction.id }}" {% if loop.first %}selected{% endif %}>
+                                    {{ instruction.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text mt-2">
+                            <a href="{{ url_for('custom_instructions') }}" class="text-decoration-none">
+                                <i class="fas fa-plus-circle me-1"></i>Manage Custom Instructions
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="understand_checkbox" required>
+                            <label class="form-check-label" for="understand_checkbox">
+                                I understand this will use OpenAI API credits
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary" id="upload_btn">
+                            <i class="fas fa-microphone me-1"></i> Transcribe Audio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>About This Tool
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>This application transcribes legal audio files using OpenAI's Whisper model and then enhances the transcription using GPT-4o.</p>
+                <h6 class="fw-bold">Features:</h6>
+                <ul>
+                    <li>Transcribes MP3 and WAV files</li>
+                    <li>Automatically splits large files</li>
+                    <li>Cleans up transcription formatting</li>
+                    <li>Exports to PDF and plaintext</li>
+                    <li>Customizable post-processing instructions</li>
+                </ul>
+                <p class="mb-0 small text-muted">For large files, processing may take some time.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Transcription History Section -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Transcription History
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if transcriptions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Type</th>
+                                    <th>Duration</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transcription in transcriptions %}
+                                <tr>
+                                    <td>{{ transcription.original_filename }}</td>
+                                    <td>{{ transcription.file_type }}</td>
+                                    <td>{{ "%.2f"|format(transcription.duration_seconds) }}s</td>
+                                    <td>{{ transcription.created_at }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('view_transcription', transcription_id=transcription.id) }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ transcription.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Delete Confirmation Modal -->
+                                        <div class="modal fade" id="deleteModal-{{ transcription.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Confirm Deletion</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Are you sure you want to delete the transcription for <strong>{{ transcription.original_filename }}</strong>?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <form action="{{ url_for('delete_transcription_route', transcription_id=transcription.id) }}" method="post">
+                                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-audio fa-4x text-muted mb-3"></i>
+                        <p class="mb-0">No transcriptions yet. Upload an audio file to get started.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Disable submit button while uploading to prevent multiple submissions
+    document.querySelector('form').addEventListener('submit', function() {
+        document.getElementById('upload_btn').innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+        document.getElementById('upload_btn').disabled = true;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Custom Instructions - Legal Audio Transcription Tool{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="breadcrumb-item active">Custom Instructions</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Instruction Form -->
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>Add Custom Instruction
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('add_custom_instruction') }}" method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Instruction Name</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="E.g., Legal Deposition, Client Interview" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="instruction_text" class="form-label">Instruction Text</label>
+                        <textarea class="form-control" id="instruction_text" name="instruction_text" rows="7" placeholder="Instructions for GPT-4o to follow when processing the transcription..." required></textarea>
+                        <div class="form-text text-muted">
+                            These instructions will be sent to GPT-4o as system instructions when cleaning up the raw Whisper transcription.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Save Instruction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>About Custom Instructions
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Custom instructions tell GPT-4o how to clean up and format the raw transcription from Whisper.</p>
+                <h6 class="fw-bold">Tips for effective instructions:</h6>
+                <ul>
+                    <li>Be specific about the format you want (paragraphs, timestamps, speaker identification)</li>
+                    <li>Mention legal terminology that might need special attention</li>
+                    <li>Specify how to handle unclear or ambiguous sections</li>
+                    <li>Include any preferences for punctuation or formatting</li>
+                </ul>
+                <p class="mb-0 small text-muted">The default instruction works well for most legal transcriptions.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Instruction List -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Saved Instructions
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if custom_instructions %}
+                    <div class="list-group list-group-flush">
+                        {% for instruction in custom_instructions %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0">{{ instruction.name }}</h5>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteInstructionModal-{{ instruction.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="instruction-text small bg-light p-3 rounded">
+                                    <pre class="mb-0">{{ instruction.instruction_text }}</pre>
+                                </div>
+                                <div class="text-muted small mt-2">
+                                    Created: {{ instruction.created_at }}
+                                </div>
+                                
+                                <!-- Delete Confirmation Modal -->
+                                <div class="modal fade" id="deleteInstructionModal-{{ instruction.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Confirm Deletion</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to delete the instruction <strong>{{ instruction.name }}</strong>?</p>
+                                                <p class="text-danger"><strong>Note:</strong> This will not affect existing transcriptions that used this instruction.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form action="{{ url_for('delete_custom_instruction_route', instruction_id=instruction.id) }}" method="post">
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-cog fa-4x text-muted mb-3"></i>
+                        <p class="mb-0">No custom instructions yet. Add one using the form.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: inherit;
+    }
+    
+    .instruction-text {
+        max-height: 150px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
